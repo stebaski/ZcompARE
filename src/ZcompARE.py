@@ -61,15 +61,16 @@ elif reply == 'Exit':
 spiers = 'Spiers et al. 1946'
 glasser = 'Glasser et al. 1947'
 hine = 'Hine et al. 1952'
-tsa = 'Tsa and Cho 1976 (E < 150 keV)'
+tsa = 'Tsai and Cho 1976 (E < 150 keV)'
 pul = 'Puumalainen et al. 1977' 
-sirz = 'Champley et al. (SIRZ-2)'
+sirz = 'Champley et al. 2019 (SIRZ-2)'
+dirz = 'Un et al. 2013 (Direct-Zeff)'
 
-methods = [spiers,glasser,hine,tsa,pul,sirz]
+methods = [spiers,glasser,hine,tsa,pul,dirz,sirz]
 mymethods = multchoicebox("Choose desired methods for Zeff calculation:", choices=methods)
 if mymethods==None:
     sys.exit()
-if sirz in mymethods:
+if sirz or dirz in mymethods:
     Emin = integerbox(msg='For SIRZ-2 method, energy range is needed.\n Enter minimum energy (keV)', lowerbound=1, upperbound=600)
     Emax = integerbox(msg='Enter maximum energy (keV)', lowerbound=Emin+1, upperbound=600)
     Es = range(Emin,Emax)
@@ -114,7 +115,7 @@ for m,material in enumerate(mycompounds):
     result = [round(v * factor) for v in fracs]
     weights = (result*Znums)/np.sum(result*Znums)
     Z_init = np.round((np.sum(mfracs*Znums**4)/np.sum(mfracs*Znums))**(1/3))
-    Zarray[m,6] = rho
+    Zarray[m,7] = rho
     if spiers in mymethods:
         Zs1 = Znums**p
         Zeff1 = np.sum(Zs1*weights)**(1/p)
@@ -135,7 +136,15 @@ for m,material in enumerate(mycompounds):
         ntotal = np.sum(result)
         Zeff8 = np.sum((result/ntotal)*Znums)
         Zarray[m,4] = Zeff8
-    if sirz in mymethods:
+    if dirz in mymethods:
+        dirz_Z = []
+        for E in Es:
+            lam = 1.239842e-7 / E  
+            att = np.array([xraylib.CS_Total(Z, E) for Z in Znums])
+            effat = np.sum
+            dirz_Z.append(np.sum(weights*aw*att)/np.sum((weights*aw)/Znums*att))
+        Zarray[m,5] = np.mean(dirz_Z) #here we can use spectral and detector response and then it will be weighted mean
+    if sirz in mymethods: 
         ydata = []
         for E in Es:
             lam = 1.239842e-7 / E   
@@ -169,7 +178,7 @@ for m,material in enumerate(mycompounds):
             Res_water.append(residuals)
         res_min = Res_water.index(min(Res_water))
         winner = Zs[res_min]
-        Zarray[m,5] = Zes_water[res_min]
+        Zarray[m,6] = Zes_water[res_min]
 
         
 df = pd.DataFrame(Zarray, index=mycompounds, columns=methods+[r'Density (g/cm3)'])
