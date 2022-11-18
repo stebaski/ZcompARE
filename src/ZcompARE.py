@@ -34,7 +34,7 @@ if reply == 'NIST compounds':
     if mycompounds == None:
         sys.exit()
 elif reply == 'My compounds':
-
+    buttonbox("Please organize your material file as shown in the image.\nTop row contains atomic numbers of single elements and following rows contain mass fractions of each element (which must add up to 1) in each compound named in the column Name.\nN.B.\nLast 3 columns are not important, but please do keep them occupied.\nPlease use unique names for your compounds.",title = 'DukeSim material file format', image=image2, choices=['Got it!'])
     while True:
         try:
             mypath = multenterbox(msg = 'Enter path to the file.', title = 'Load excel file (.xlsx, .xls)', fields = ['Path to the folder: ', 'File name: '])
@@ -64,7 +64,7 @@ hine = 'Hine et al. 1952'
 tsa = 'Tsai and Cho 1976 (E < 150 keV)'
 pul = 'Puumalainen et al. 1977' 
 sirz = 'Champley et al. 2019 (SIRZ-2)'
-dirz = 'Un et al. 2013 (Direct-Zeff)'
+dirz = 'Gowda et al. 2004 (also Direct-Zeff 2014)'
 
 methods = [spiers,glasser,hine,tsa,pul,dirz,sirz]
 mymethods = multchoicebox("Choose desired methods for Zeff calculation:", choices=methods)
