@@ -51,9 +51,13 @@ elif reply == 'My compounds':
             continue
         else:
             break
-    
-    mycompounds = list(mydf.iloc[:,0])
-    mydf.index = mycompounds
+    mydf.index = list(mydf.iloc[:,0])
+     # if first columns contains the same names, modify them by adding number at the end
+    suffix = mydf.groupby(level=0).cumcount().replace(0, '').astype(str)
+    mydf.index += suffix
+    mycompounds = list(mydf.index)
+
+
 elif reply == 'Exit':
     sys.exit()
 
@@ -70,8 +74,8 @@ methods = [spiers,glasser,hine,tsa,pul,dirz,sirz]
 mymethods = multchoicebox("Choose desired methods for Zeff calculation:", choices=methods)
 if mymethods==None:
     sys.exit()
-if sirz or dirz in mymethods:
-    Emin = integerbox(msg='For SIRZ-2 method, energy range is needed.\n Enter minimum energy (keV)', lowerbound=1, upperbound=600)
+if (sirz in mymethods) or (dirz in mymethods):
+    Emin = integerbox(msg='For SIRZ-2 and Direct-Z method, energy range is needed.\n\nEnter minimum energy (keV)', lowerbound=1, upperbound=600)
     Emax = integerbox(msg='Enter maximum energy (keV)', lowerbound=Emin+1, upperbound=600)
     Es = range(Emin,Emax)
     def Ze_fun(E,b):
@@ -99,14 +103,13 @@ for m,material in enumerate(mycompounds):
     if reply == 'My compounds':
         Znums = np.array(mydf.columns[1:-4])
         mfracs = list(mydf.loc[material][1:-4])
-        rho = list(mydf.loc[material])[-4]
-        
+        rho = list(mydf.loc[material])[-4] 
     #convert the mass fractions into the equivalent of a chemical formula
     #by dividing each element’s fraction-by-mass by its atomic mass
     aw = np.array([xraylib.AtomicWeight(Z_) for Z_ in Znums])
 
     #atomic fractions
-    fracs = mfracs / aw
+    fracs = mfracs / aw 
     #round floats to integer keeping the ratio
     #to get the fraction of the total number of electrons associated with each element
     fractions = [Fraction(val).limit_denominator(100) for val in fracs]
